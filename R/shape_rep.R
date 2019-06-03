@@ -61,12 +61,7 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL,
       stop("x and mx must be the same length")
     }
   }
-<<<<<<< HEAD
   if(any(duplicated(x))) stop("all x must be unique values")
-=======
-  if(is.null(xmin)) xmin <- x[min(which(mx > 0))]
-  if(is.null(xmax)) xmax <- max(x)
->>>>>>> jonesor/devel
   if(any(diff(x) <= 0)) stop("much as we'd like to reverse aging, x must all be ascending")
   if(any(mx[!is.na(mx)] < 0)) stop("You appear to have minus-babies (check mx)")
   if(any(length(xmin) > 1, length(xmax) > 1)){
@@ -142,18 +137,4 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL,
                             BxStd = Bx_std)
     return(list(shape = shape, fertTable = fertTable))
   }
-<<<<<<< HEAD
-=======
-  ltdim <- length(x)
-  Bx <- c(0, cumsum(mx[1:(ltdim - 1)]))
-  Bx_sub <- Bx[x >= xmin & x <= xmax]
-  xStd <- (x_sub - xmin) / (xmax - xmin)
-  Bxmin <- Bx_sub[which.min(xStd)]
-  Bxmax <- Bx_sub[which.max(xStd)]
-  BxStd <- (Bx_sub - Bxmin) / (Bxmax - Bxmin)
-  aucStd <- area_under_curve(xStd, BxStd)
-  aucFlat <- 0.5
-  shape <- aucStd - aucFlat
-  shape
->>>>>>> jonesor/devel
 }
