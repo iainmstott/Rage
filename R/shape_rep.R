@@ -26,6 +26,10 @@
 #' @param xmin,xmax The minimum and maximum age repectively over which to evaluate
 #'   shape. If not given, these default to \code{min(x)} and \code{max(x)} 
 #'   respectively.
+#' @param fertTable logical determining whether to return the fertility table 
+#'   used to calculate pace, including standardised measures of age, fertility
+#'   and standardised fertility.
+#'
 #'
 #' @return a shape value describing symmetry of reproduction over age by comparing 
 #'   the area under a cumulative reproduction curve over age with the area under 
@@ -45,7 +49,8 @@
 #' shape_rep(mx)
 #'
 #' @export shape_rep
-shape_rep <- function(rep, xmin = NULL, xmax = NULL) {
+shape_rep <- function(rep, xmin = NULL, xmax = NULL, 
+                      fertTable = FALSE) {
   if(class(rep) %in% "numeric") {
     mx <- rep
     x <- seq_along(mx) - 1
@@ -60,24 +65,80 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL) {
       stop("x and mx must be the same length")
     }
   }
-  if(is.null(xmin)) xmin <- x[min(which(mx > 0))]
-  if(is.null(xmax)) xmax <- max(x)
   if(any(duplicated(x))) stop("all x must be unique values")
   if(any(diff(x) <= 0)) stop("much as we'd like to reverse aging, x must all be ascending")
-  if(any(mx < 0)) stop("You appear to have minus-babies (check mx)")
-  x_sub <- x[x >= xmin & x <= xmax]
-  if(length(x_sub) <= 2) {
-    stop("must have > 2 nonzero values of mx to calculate shape")
+  if(any(mx[!is.na(mx)] < 0)) stop("You appear to have minus-babies (check mx)")
+  if(any(length(xmin) > 1, length(xmax) > 1)){
+    stop("xmin and xmax must have length 1 or NULL")
   }
-  ltdim <- length(x)
-  Bx <- c(0, cumsum(mx[1:(ltdim - 1)]))
-  Bx_sub <- Bx[x >= xmin & x <= xmax]
-  xStd <- (x_sub - xmin) / (xmax - xmin)
-  Bxmin <- Bx[which.min(xStd)]
-  Bxmax <- Bx[which.max(xStd)]
-  BxStd <- (Bx_sub - Bxmin) / (Bxmax - Bxmin)
-  aucStd <- area_under_curve(xStd, BxStd)
-  aucFlat <- 0.5
-  shape <- aucStd - aucFlat
-  shape
+  ltdim <- length(x) 
+  if(is.null(xmin)) xmin_fix <- x[min(which(mx > 0))]
+  if(!is.null(xmin)) xmin_fix <- xmin
+  if(is.null(xmax)) { 
+    if(is.na(mx[ltdim])) {
+      x_fix <- x
+      ltdim_fix <- length(x_fix)
+      xmax_fix <- max(x_fix)
+      mx_fix <- mx
+      x_sub <- x_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
+      ltdim_sub <- length(x_sub)
+      mx_sub <- mx_fix[x >= xmin_fix & x <= xmax_fix]
+    }
+    if(!is.na(mx[ltdim])) {
+      x_fix <- c(x, x[ltdim] + (x[ltdim] - x[ltdim - 1]))
+      ltdim_fix <- length(x_fix)
+      xmax_fix <-  max(x_fix)
+      mx_fix <- c(mx, NA)
+      x_sub <- x_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
+      ltdim_sub <- length(x_sub)
+      mx_sub <- mx_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
+    }
+  }
+  if(!is.null(xmax)){ 
+    if(is.na(mx[which(x == xmax)])){
+      x_fix <- x
+      ltdim_fix <- length(x_fix)
+      xmax_fix <- xmax
+      mx_fix <- mx
+      x_sub <- x_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
+      ltdim_sub <- length(x_sub)
+      mx_sub <- mx_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
+    }
+    if(!is.na(mx[which(x == xmax)])){
+      x_fix <- x
+      ltdim_fix <- length(x_fix)
+      xmax_fix <- xmax
+      mx_fix <- mx
+      x_sub <- x_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
+      ltdim_sub <- length(x_sub)
+      mx_sub <- mx_fix[x >= xmin_fix & x <= xmax_fix]
+      mx_sub[xmax_fix] <- NA
+    }
+  }
+  if(ltdim_sub <= 3 ) {
+    stop("must have > 2 values of mx to calculate shape")
+  }
+  lt_sub_int <- diff(x_sub)
+  Bx_sub <- c(0, cumsum(mx_sub[seq(1, ltdim_sub-1, 1)]) * lt_sub_int)
+  B <- max(Bx_sub)
+  x_std <- (x_sub - xmin_fix) / (xmax_fix - xmin_fix)
+  # standardised mx has mean of 1
+  # last "fix" class is NA as no more offspring past the start of the class
+  mx_std <- (mx_sub / B) * (xmax_fix - xmin_fix)
+  Bxmin <- Bx_sub[which.min(x_std)]
+  Bxmax <- Bx_sub[which.max(x_std)]
+  Bx_std <- (Bx_sub - Bxmin) / (Bxmax - Bxmin) 
+  auc_std <- area_under_curve(x_std, Bx_std)
+  auc_flat <- 0.5
+  shape <- auc_std - auc_flat
+  if(!fertTable) return(shape)
+  if(fertTable) { 
+    fertTable <- data.frame(x = x_sub,
+                            mx = mx_sub,
+                            Bx = Bx_sub,
+                            xStd = x_std,
+                            mxStd = mx_std,
+                            BxStd = Bx_std)
+    return(list(shape = shape, fertTable = fertTable))
+  }
 }
