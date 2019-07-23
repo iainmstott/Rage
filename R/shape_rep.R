@@ -46,31 +46,31 @@
 #'
 #' @export shape_rep
 shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
-  if(class(rep) %in% "numeric") {
+  if (class(rep) %in% "numeric") {
     mx <- rep
     x <- seq_along(mx) - 1
   }
-  if(class(rep) %in% c("list", "data.frame")) {
-    if(!all(c("x", "mx") %in% names(rep))) {
+  if (class(rep) %in% c("list", "data.frame")) {
+    if (!all(c("x", "mx") %in% names(rep))) {
       stop("'rep' is a data.frame or list and doesn't contain both x and mx")
     }
     x <- rep$x
     mx <- rep$mx
-    if(length(x) != length(mx)) {
+    if (length(x) != length(mx)) {
       stop("x and mx must be the same length")
     }
   }
-  if(any(duplicated(x))) stop("all x must be unique values")
-  if(any(diff(x) <= 0)) stop("much as we'd like to reverse aging, x must all be ascending")
-  if(any(mx[!is.na(mx)] < 0)) stop("You appear to have minus-babies (check mx)")
-  if(any(length(xmin) > 1, length(xmax) > 1)){
+  if (any(duplicated(x))) stop("all x must be unique values")
+  if (any(diff(x) <= 0)) stop("much as we'd like to reverse aging, x must all be ascending")
+  if (any(mx[!is.na(mx)] < 0)) stop("You appear to have minus-babies (check mx)")
+  if (any(length(xmin) > 1, length(xmax) > 1)){
     stop("xmin and xmax must have length 1 or NULL")
   }
   ltdim <- length(x) 
-  if(is.null(xmin)) xmin_fix <- x[min(which(mx > 0))]
-  if(!is.null(xmin)) xmin_fix <- xmin
-  if(is.null(xmax)) { 
-    if(is.na(mx[ltdim])) {
+  if (is.null(xmin)) xmin_fix <- x[min(which(mx > 0))]
+  if (!is.null(xmin)) xmin_fix <- xmin
+  if (is.null(xmax)) { 
+    if (is.na(mx[ltdim])) {
       x_fix <- x
       ltdim_fix <- length(x_fix)
       xmax_fix <- max(x_fix)
@@ -79,7 +79,7 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
       ltdim_sub <- length(x_sub)
       mx_sub <- mx_fix[x >= xmin_fix & x <= xmax_fix]
     }
-    if(!is.na(mx[ltdim])) {
+    if (!is.na(mx[ltdim])) {
       x_fix <- c(x, x[ltdim] + (x[ltdim] - x[ltdim - 1]))
       ltdim_fix <- length(x_fix)
       xmax_fix <-  max(x_fix)
@@ -89,8 +89,8 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
       mx_sub <- mx_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
     }
   }
-  if(!is.null(xmax)){ 
-    if(is.na(mx[which(x == xmax)])){
+  if (!is.null(xmax)){ 
+    if (is.na(mx[which(x == xmax)])){
       x_fix <- x
       ltdim_fix <- length(x_fix)
       xmax_fix <- xmax
@@ -99,7 +99,7 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
       ltdim_sub <- length(x_sub)
       mx_sub <- mx_fix[x_fix >= xmin_fix & x_fix <= xmax_fix]
     }
-    if(!is.na(mx[which(x == xmax)])){
+    if (!is.na(mx[which(x == xmax)])){
       x_fix <- x
       ltdim_fix <- length(x_fix)
       xmax_fix <- xmax
@@ -110,11 +110,11 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
       mx_sub[xmax_fix] <- NA
     }
   }
-  if(ltdim_sub <= 2 ) {
+  if (ltdim_sub <= 2) {
     stop("must have > 2 values of mx to calculate shape")
   }
   lt_sub_int <- diff(x_sub)
-  Bx_sub <- c(0, cumsum(mx_sub[seq(1, ltdim_sub-1, 1)]) * lt_sub_int)
+  Bx_sub <- c(0, cumsum(mx_sub[seq(1, ltdim_sub - 1, 1)]) * lt_sub_int)
   B <- max(Bx_sub)
   x_std <- (x_sub - xmin_fix) / (xmax_fix - xmin_fix)
   # standardised mx has mean of 1
@@ -126,8 +126,8 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
   auc_std <- area_under_curve(x_std, Bx_std)
   auc_flat <- 0.5
   shape <- auc_std - auc_flat
-  if(!fertTable) return(shape)
-  if(fertTable) { 
+  if (!fertTable) return(shape)
+  if (fertTable) { 
     fertTable <- data.frame(x = x_sub,
                             mx = mx_sub,
                             Bx = Bx_sub,
