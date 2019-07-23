@@ -49,7 +49,7 @@ pace_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE){
     }
     if (class(rep) %in% c("list", "data.frame")) {
         if (!all(c("x", "mx") %in% names(rep))) {
-            stop("'rep' doesn't contain both x and mx")
+            stop("'rep' is a data.frame or list and doesn't contain both x and mx")
         }
         x <- rep$x
         mx <- rep$mx
@@ -62,5 +62,6 @@ pace_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE){
     shape_xmin <- min(shape$fertTable$x)
     shape_xmax <- max(shape$fertTable$x)
     pace <- (shape_xmax - shape_xmin) * (0.5 - shape$shape)
-    return(pace)
+    if (!fertTable) return(pace)
+    if (fertTable) return(list(pace = pace, fertTable = shape$fertTable))
 }

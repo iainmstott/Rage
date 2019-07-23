@@ -45,15 +45,14 @@
 #' shape_rep(mx)
 #'
 #' @export shape_rep
-shape_rep <- function(rep, xmin = NULL, xmax = NULL, 
-                      fertTable = FALSE) {
+shape_rep <- function(rep, xmin = NULL, xmax = NULL, fertTable = FALSE) {
   if(class(rep) %in% "numeric") {
     mx <- rep
     x <- seq_along(mx) - 1
   }
   if(class(rep) %in% c("list", "data.frame")) {
     if(!all(c("x", "mx") %in% names(rep))) {
-      stop("'rep' doesn't contain both x and mx")
+      stop("'rep' is a data.frame or list and doesn't contain both x and mx")
     }
     x <- rep$x
     mx <- rep$mx
@@ -111,7 +110,7 @@ shape_rep <- function(rep, xmin = NULL, xmax = NULL,
       mx_sub[xmax_fix] <- NA
     }
   }
-  if(ltdim_sub <= 3 ) {
+  if(ltdim_sub <= 2 ) {
     stop("must have > 2 values of mx to calculate shape")
   }
   lt_sub_int <- diff(x_sub)

@@ -41,17 +41,18 @@
 #' shape_surv(lx)
 #' 
 #' @export shape_surv
-shape_surv <- function(surv, xmin = NULL, xmax = NULL, trunc = FALSE) {
+shape_surv <- function(surv, xmin = NULL, xmax = NULL, trunc = FALSE,
+                       survTable = FALSE) {
   if(class(surv) %in% "numeric") {
     lx <- surv
-    x <- seq_along(lx) - 1
     if(lx[1] != 1) {
       stop("if x isn't given, lx must start with 1 as x[1] is assumed to be 0")
     }
+    x <- seq_along(lx) - 1
   }
   if(class(surv) %in% c("list", "data.frame")) {
     if(!all(c("x", "lx") %in% names(surv))) {
-      stop("'surv' doesn't contain both x and lx")
+      stop("'surv' is a data.frame or list and doesn't contain both x and lx")
     }
     x <- surv$x
     lx <- surv$lx
@@ -76,19 +77,27 @@ or transforming zero values. See ?shape_surv for more details.\n")
   if(is.null(xmin)) xmin <- min(x)
   if(is.null(xmax)) xmax <- max(x)
   if(any(diff(x) <= 0)) stop("much as we'd like to reverse aging, x must all be ascending")
-  if(any(diff(lx) > 1e-7)) stop("please don't bring people back from the dead (check lx)")
+  if(any(diff(lx) > 1e-7)) stop("please don't bring organisms back from the dead (check lx)")
   x_sub <- x[x >= xmin & x <= xmax]
-  if(length(x_sub) <= 2) {
+  if(length(x_sub)[x_sub > 0] <= 2) {
     stop("must have > 2 nonzero values of lx to calculate shape")
   }
   lx_sub <- lx[x >= xmin & x <= xmax]
   lx_log <- log(lx_sub)
-  xStd <- (x_sub - xmin) / (xmax - xmin)
-  lxmin <- lx_log[which.min(xStd)]
-  lxmax <- lx_log[which.max(xStd)]
-  lxStd <- (lx_log - lxmin) / (lxmax - lxmin)
-  aucStd <- area_under_curve(xStd, lxStd)
+  x_std <- (x_sub - xmin) / (xmax - xmin)
+  lxmin <- lx_log[which.min(x_std)]
+  lxmax <- lx_log[which.max(x_std)]
+  lx_std <- (lx_log - lxmin) / (lxmax - lxmin)
+  aucStd <- area_under_curve(x_std, lx_std)
   aucFlat <- 0.5
   shape <- aucFlat - aucStd
-  shape
+  if (!survTable) return(shape)
+  if (survTable) {
+    survTable <- data.frame(x = x_sub,
+                            lx = lx_sub,
+                            lxLog = lx_log,
+                            xStd = x_std,
+                            lxLogStd = lx_std)
+    return(list(shape = shape, survTable = survTable))
+  }
 }
