@@ -4,7 +4,8 @@
 \alias{shape_surv}
 \title{Calculate shape of survival over age}
 \usage{
-shape_surv(surv, xmin = NULL, xmax = NULL, trunc = FALSE)
+shape_surv(surv, xmin = NULL, xmax = NULL, trunc = FALSE,
+  survTable = FALSE)
 }
 \arguments{
 \item{surv}{Either 1) a numeric vector describing a survival curve (lx), or

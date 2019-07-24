@@ -4,7 +4,7 @@
 \alias{shape_rep}
 \title{Calculate shape of reproduction over age}
 \usage{
-shape_rep(rep, xmin = NULL, xmax = NULL)
+shape_rep(rep, xmin = NULL, xmax = NULL, fertTable = FALSE)
 }
 \arguments{
 \item{rep}{Either 1) a numeric vector describing reproduction over age (mx),

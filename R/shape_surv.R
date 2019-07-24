@@ -79,7 +79,7 @@ or transforming zero values. See ?shape_surv for more details.\n")
   if(any(diff(x) <= 0)) stop("much as we'd like to reverse aging, x must all be ascending")
   if(any(diff(lx) > 1e-7)) stop("please don't bring organisms back from the dead (check lx)")
   x_sub <- x[x >= xmin & x <= xmax]
-  if(length(x_sub)[x_sub > 0] <= 2) {
+  if(length(x_sub[x_sub > 0]) <= 2) {
     stop("must have > 2 nonzero values of lx to calculate shape")
   }
   lx_sub <- lx[x >= xmin & x <= xmax]
